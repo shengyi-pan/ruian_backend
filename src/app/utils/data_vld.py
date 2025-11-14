@@ -19,9 +19,11 @@ from app.utils.parse_util import (
 )
 
 
-class ExceptEnum(str, Enum):
+class VldResultEnum(str, Enum):
     """异常枚举类型"""
 
+    NOT_VLDED = "未校验"
+    VLD_PASSED = "校验通过"
     PERFORMANCE_EXCEEDS_QUANTITY = "工作量超出系统值"
     ORDER_NO_NOT_FOUND = "工作量生产单号不存在"
 
@@ -30,7 +32,7 @@ def validate_production_and_worklog(
     production_info_list: List[ProductionInfo],
     employee_worklog_list: List[EmployeeWorklog],
 ) -> Tuple[
-    Dict[Tuple[str, ExceptEnum], List[EmployeeWorklog]],
+    Dict[Tuple[str, VldResultEnum], List[EmployeeWorklog]],
     Dict[str, List[EmployeeWorklog]],
 ]:
     """
@@ -46,8 +48,8 @@ def validate_production_and_worklog(
             - 正常数据字典: 以order_no为key, 正常明细数据为value的字典
     """
     # 初始化返回结果
-    exception_result: Dict[Tuple[str, ExceptEnum], List[EmployeeWorklog]] = defaultdict(
-        list
+    exception_result: Dict[Tuple[str, VldResultEnum], List[EmployeeWorklog]] = (
+        defaultdict(list)
     )
     normal_result: Dict[str, List[EmployeeWorklog]] = defaultdict(list)
 
@@ -70,8 +72,12 @@ def validate_production_and_worklog(
         if order_no not in production_agg:
             # 异常：工作量生产单号不存在
             exception_order_nos.add(order_no)
-            exception_result[(order_no, ExceptEnum.ORDER_NO_NOT_FOUND)].extend(
-                worklog_by_order[order_no]
+            worklog_list = worklog_by_order[order_no]
+            # 为每个 worklog 设置校验结果
+            for worklog in worklog_list:
+                worklog.validation_result = VldResultEnum.ORDER_NO_NOT_FOUND.value
+            exception_result[(order_no, VldResultEnum.ORDER_NO_NOT_FOUND)].extend(
+                worklog_list
             )
 
     # 4. 检查异常：工作量超出系统值
@@ -82,13 +88,22 @@ def validate_production_and_worklog(
             if worklog_sum > production_sum:
                 # 异常：工作量超出系统值
                 exception_order_nos.add(order_no)
+                worklog_list = worklog_by_order[order_no]
+                # 为每个 worklog 设置校验结果
+                for worklog in worklog_list:
+                    worklog.validation_result = (
+                        VldResultEnum.PERFORMANCE_EXCEEDS_QUANTITY.value
+                    )
                 exception_result[
-                    (order_no, ExceptEnum.PERFORMANCE_EXCEEDS_QUANTITY)
-                ].extend(worklog_by_order[order_no])
+                    (order_no, VldResultEnum.PERFORMANCE_EXCEEDS_QUANTITY)
+                ].extend(worklog_list)
 
     # 5. 收集正常数据（没有异常的 order_no）
     for order_no, worklog_list in worklog_by_order.items():
         if order_no not in exception_order_nos:
+            # 为每个 worklog 设置校验结果为通过
+            for worklog in worklog_list:
+                worklog.validation_result = VldResultEnum.VLD_PASSED.value
             normal_result[order_no].extend(worklog_list)
 
     # 转换为普通字典（去除 defaultdict）

@@ -4,13 +4,45 @@ from typing import List, Optional
 
 import pandas as pd
 from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import Column, Integer, String, Numeric, DateTime, UniqueConstraint, Index
+from sqlalchemy.sql import func
+
+from app.database import Base
 
 # UTC+8 时区（东八区，中国标准时间）
 TZ_UTC_PLUS_8 = timezone(timedelta(hours=8))
 
 
 # ------------------------------
-# 1) 定义 Pydantic BaseModel
+# 1) 定义 SQLAlchemy ORM 模型
+# ------------------------------
+class ProductionInfoDB(Base):
+    """生产信息数据库模型"""
+
+    __tablename__ = "production_info"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_no = Column(String, nullable=False, index=True)
+    model = Column(String, nullable=False)
+    brand_no = Column(String, nullable=False)
+    quantity = Column(Integer, nullable=False)
+    job_type = Column(String, nullable=False, index=True)
+    performance_factor = Column(Numeric(6, 2), nullable=False)
+    upload_date = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+    # 唯一约束：同一订单 + 型号 + 牌号 + 工种 + 上传日期 只保留一条
+    __table_args__ = (
+        UniqueConstraint("order_no", "model", "brand_no", "job_type", "upload_date", name="uq_prodinfo"),
+        Index("idx_prodinfo_order_date", "order_no", "upload_date"),
+    )
+
+
+# ------------------------------
+# 2) 定义 Pydantic BaseModel
 # ------------------------------
 class ProductionInfo(BaseModel):
     """

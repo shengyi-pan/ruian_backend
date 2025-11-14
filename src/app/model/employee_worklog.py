@@ -13,6 +13,61 @@ from datetime import date, datetime, time
 from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import Column, DateTime, Index, Integer, Numeric, String
+from sqlalchemy.sql import func
+
+from app.database import Base
+from app.utils.data_vld import VldResultEnum
+
+
+# ------------------------------
+# 1) 定义 SQLAlchemy ORM 模型
+# ------------------------------
+class EmployeeWorklogDB(Base):
+    """员工工作量数据库模型"""
+
+    __tablename__ = "employee_worklog"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_no = Column(String, nullable=False, index=True)
+    model = Column(String, nullable=True)
+    brand_no = Column(String, nullable=True)
+    employee_id = Column(String, nullable=False, index=True)
+    employee_name = Column(String, nullable=True)
+    job_type = Column(String, nullable=False, index=True)
+    quantity = Column(Integer, nullable=False)
+    performance_factor = Column(Numeric(6, 2), nullable=False)
+    performance_amount = Column(Numeric(18, 2), nullable=False)
+    work_date = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    upload_date = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    validation_result = Column(
+        String, nullable=False, default=VldResultEnum.NOT_VLDED.value
+    )
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    # 索引
+    __table_args__ = (
+        Index("idx_worklog_emp_date", "employee_id", "work_date"),
+        Index("idx_worklog_order_date", "order_no", "work_date"),
+        Index("idx_worklog_job_date", "job_type", "work_date"),
+    )
+
+
+# ------------------------------
+# 2) 定义 Pydantic BaseModel
+# ------------------------------
 
 
 class EmployeeWorklog(BaseModel):
@@ -40,6 +95,7 @@ class EmployeeWorklog(BaseModel):
 
     # 下面几个时间字段用当前时间作为默认值（合法、非空）
     upload_date: datetime = Field(default_factory=lambda: datetime.now())
+    validation_result: str = Field(default=VldResultEnum.NOT_VLDED.value)  # 校验结果
     created_at: datetime = Field(default_factory=lambda: datetime.now())
     updated_at: datetime = Field(default_factory=lambda: datetime.now())
 

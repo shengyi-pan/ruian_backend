@@ -2,14 +2,14 @@
  * @Author: sy.pan
  * @Date: 2025-09-10 10:27:41
  * @LastEditors: sy.pan
- * @LastEditTime: 2025-11-12 17:27:18
+ * @LastEditTime: 2025-11-15 16:41:36
  * @FilePath: /ruian_backend/README.md
  * @Description:
  *
  * Copyright (c) 2025 by sy.pan, All Rights Reserved.
 -->
 
-# 瑞安后端 API
+# 锐安后端 API
 
 Python UV project demo.
 

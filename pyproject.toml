@@ -32,6 +32,7 @@ dev = [
 
 [project.scripts]
 app = "app.main:main"
+export-docs = "scripts.export_docs:export_openapi_docs"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/app"]

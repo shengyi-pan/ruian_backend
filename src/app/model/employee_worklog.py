@@ -1,5 +1,16 @@
 """
 Author: sy.pan
+Date: 2025-11-14 15:13:05
+LastEditors: sy.pan
+LastEditTime: 2025-11-15 14:16:38
+FilePath: /ruian_backend/src/app/model/employee_worklog.py
+Description:
+
+Copyright (c) 2025 by sy.pan, All Rights Reserved.
+"""
+
+"""
+Author: sy.pan
 Date: 2025-11-13 17:16:52
 LastEditors: sy.pan
 LastEditTime: 2025-11-13 17:17:49

@@ -1,6 +1,8 @@
 -- 数据库表创建脚本
 -- 包括：users, production_info, employee_worklog
 
+ALTER DATABASE postgres SET timezone = 'Asia/Shanghai';
+
 -- 1. 用户登录验证表
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,

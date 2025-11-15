@@ -1,0 +1,2305 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ruian-backend",
+    "description": "\n    ## 锐安后端 API 文档\n\n    本 API 提供以下功能：\n\n    * **认证管理**: 用户登录和身份验证\n    * **文件上传**: 支持本地存储和阿里云 OSS 两种方式上传 Excel 文件\n    * **生产信息查询**: 查询和管理生产订单信息\n    * **员工工作量查询**: 查询和管理员工工作量记录\n    * **数据核验**: 验证生产信息和员工工作量数据的一致性\n\n    ## 认证说明\n\n    大部分接口需要 Bearer Token 认证。请先调用 `/api/auth/login` 接口获取 token，\n    然后在请求头中添加：`Authorization: Bearer <your_token>`\n\n    ## 错误响应\n\n    所有错误响应都遵循统一格式：\n    ```json\n    {\n        \"error\": true,\n        \"message\": \"错误消息\",\n        \"detail\": {}\n    }\n    ```\n    ",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "用户登录",
+        "description": "使用用户名和密码登录，获取访问令牌（JWT Token）。",
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Login Api Auth Login Post"
+                },
+                "example": {
+                  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "token_type": "bearer"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "获取当前用户信息",
+        "description": "获取当前已认证用户的基本信息。需要 Bearer Token 认证。",
+        "operationId": "get_current_user_info_api_auth_me_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                },
+                "example": {
+                  "id": 1,
+                  "username": "admin",
+                  "created_at": "2025-01-01T00:00:00Z",
+                  "updated_at": "2025-01-01T00:00:00Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败，Token 无效或已过期",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/production/local": {
+      "post": {
+        "tags": [
+          "upload"
+        ],
+        "summary": "本地方式上传生产信息",
+        "description": "通过表单上传 Excel 文件到本地存储，并解析保存到数据库。需要 Bearer Token 认证。",
+        "operationId": "upload_production_local_api_upload_production_local_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_production_local_api_upload_production_local_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上传成功",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "上传成功",
+                  "filename": "production_info.xlsx",
+                  "saved_path": "uploads/production_info_20250101_123456.xlsx",
+                  "records_processed": 150
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "文件类型不支持或文件格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/production/oss": {
+      "post": {
+        "tags": [
+          "upload"
+        ],
+        "summary": "OSS 方式上传生产信息",
+        "description": "处理已上传到阿里云 OSS 的生产信息 Excel 文件，下载并解析保存到数据库。需要 Bearer Token 认证。",
+        "operationId": "upload_production_oss_api_upload_production_oss_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductionOSSUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "处理成功",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "处理成功",
+                  "object_key": "uploads/production/2025/01/production_info.xlsx",
+                  "records_processed": 150
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "OSS 文件不存在或文件格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/worklog/local": {
+      "post": {
+        "tags": [
+          "upload"
+        ],
+        "summary": "本地方式上传员工工作量",
+        "description": "通过表单上传 Excel 文件到本地存储，并解析保存到数据库。需要 Bearer Token 认证。",
+        "operationId": "upload_worklog_local_api_upload_worklog_local_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_worklog_local_api_upload_worklog_local_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上传成功",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "上传成功",
+                  "filename": "worklog_202501.xlsx",
+                  "saved_path": "uploads/worklog_202501_20250101_123456.xlsx",
+                  "records_processed": 200
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "文件类型不支持或文件格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/worklog/oss": {
+      "post": {
+        "tags": [
+          "upload"
+        ],
+        "summary": "OSS 方式上传员工工作量",
+        "description": "处理已上传到阿里云 OSS 的员工工作量 Excel 文件，下载并解析保存到数据库。需要 Bearer Token 认证。",
+        "operationId": "upload_worklog_oss_api_upload_worklog_oss_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorklogOSSUploadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "处理成功",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "message": "处理成功",
+                  "object_key": "uploads/worklog/2025/01/worklog_202501.xlsx",
+                  "records_processed": 200
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "OSS 文件不存在或文件格式错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/oss/presigned-url": {
+      "get": {
+        "tags": [
+          "upload"
+        ],
+        "summary": "获取 OSS 预签名 URL",
+        "description": "生成阿里云 OSS 的预签名 URL，用于前端直接上传文件到 OSS。需要 Bearer Token 认证。",
+        "operationId": "get_presigned_url_api_upload_oss_presigned_url_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "object_key",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "OSS 对象键(文件路径)",
+              "title": "Object Key"
+            },
+            "description": "OSS 对象键(文件路径)",
+            "example": "uploads/production/2025/01/file.xlsx"
+          },
+          {
+            "name": "expires",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 86400,
+              "minimum": 1,
+              "description": "过期时间(秒),范围 1-86400，默认 1 小时",
+              "default": 3600,
+              "title": "Expires"
+            },
+            "description": "过期时间(秒),范围 1-86400，默认 1 小时",
+            "example": 3600
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "HTTP 方法,默认 PUT",
+              "default": "PUT",
+              "title": "Method"
+            },
+            "description": "HTTP 方法,默认 PUT",
+            "example": "PUT"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "presigned_url": "https://bucket.oss-cn-hangzhou.aliyuncs.com/uploads/file.xlsx?Expires=1234567890&OSSAccessKeyId=xxx&Signature=xxx",
+                  "object_key": "uploads/file.xlsx",
+                  "expires": 3600,
+                  "method": "PUT"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/production": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "查询生产信息列表",
+        "description": "分页查询生产信息，支持按订单号、日期范围等条件过滤。需要 Bearer Token 认证。",
+        "operationId": "get_production_info_api_production_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "页码，从 1 开始",
+              "default": 1,
+              "title": "Page"
+            },
+            "description": "页码，从 1 开始",
+            "example": 1
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "每页数量，最大 100",
+              "default": 10,
+              "title": "Page Size"
+            },
+            "description": "每页数量，最大 100",
+            "example": 10
+          },
+          {
+            "name": "order_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "订单号（模糊匹配）",
+              "title": "Order No"
+            },
+            "description": "订单号（模糊匹配）",
+            "example": "ORD20250101"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "开始日期（基于 upload_date），格式：YYYY-MM-DDTHH:MM:SS",
+              "title": "Start Date"
+            },
+            "description": "开始日期（基于 upload_date），格式：YYYY-MM-DDTHH:MM:SS",
+            "example": "2025-01-01T00:00:00"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "结束日期（基于 upload_date），格式：YYYY-MM-DDTHH:MM:SS",
+              "title": "End Date"
+            },
+            "description": "结束日期（基于 upload_date），格式：YYYY-MM-DDTHH:MM:SS",
+            "example": "2025-01-31T23:59:59"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductionInfoListResponse"
+                },
+                "example": {
+                  "total": 100,
+                  "page": 1,
+                  "page_size": 10,
+                  "items": [
+                    {
+                      "id": 1,
+                      "order_no": "ORD20250101001",
+                      "model": "MODEL-A",
+                      "brand_no": "BRAND-001",
+                      "quantity": 100,
+                      "job_type": "组装",
+                      "worklog_no": "WL001",
+                      "performance_factor": 1.2,
+                      "upload_date": "2025-01-01T00:00:00Z",
+                      "created_at": "2025-01-01T00:00:00Z",
+                      "updated_at": "2025-01-01T00:00:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/production/{order_no}": {
+      "get": {
+        "tags": [
+          "production"
+        ],
+        "summary": "按订单号查询生产信息",
+        "description": "根据订单号精确查询所有相关的生产信息记录。需要 Bearer Token 认证。",
+        "operationId": "get_production_info_by_order_no_api_production__order_no__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order No"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductionInfoResponse"
+                  },
+                  "title": "Response Get Production Info By Order No Api Production  Order No  Get"
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "order_no": "ORD20250101001",
+                    "model": "MODEL-A",
+                    "brand_no": "BRAND-001",
+                    "quantity": 100,
+                    "job_type": "组装",
+                    "worklog_no": "WL001",
+                    "performance_factor": 1.2,
+                    "upload_date": "2025-01-01T00:00:00Z",
+                    "created_at": "2025-01-01T00:00:00Z",
+                    "updated_at": "2025-01-01T00:00:00Z"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "订单号不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/worklog": {
+      "get": {
+        "tags": [
+          "worklog"
+        ],
+        "summary": "查询员工工作量列表",
+        "description": "分页查询员工工作量，支持按订单号、日期范围、员工工号等条件过滤。需要 Bearer Token 认证。",
+        "operationId": "get_employee_worklog_api_worklog_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "页码，从 1 开始",
+              "default": 1,
+              "title": "Page"
+            },
+            "description": "页码，从 1 开始",
+            "example": 1
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "每页数量，最大 100",
+              "default": 10,
+              "title": "Page Size"
+            },
+            "description": "每页数量，最大 100",
+            "example": 10
+          },
+          {
+            "name": "order_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "订单号（模糊匹配）",
+              "title": "Order No"
+            },
+            "description": "订单号（模糊匹配）",
+            "example": "ORD20250101"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "开始日期（基于 work_date），格式：YYYY-MM-DDTHH:MM:SS",
+              "title": "Start Date"
+            },
+            "description": "开始日期（基于 work_date），格式：YYYY-MM-DDTHH:MM:SS",
+            "example": "2025-01-01T00:00:00"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "结束日期（基于 work_date），格式：YYYY-MM-DDTHH:MM:SS",
+              "title": "End Date"
+            },
+            "description": "结束日期（基于 work_date），格式：YYYY-MM-DDTHH:MM:SS",
+            "example": "2025-01-31T23:59:59"
+          },
+          {
+            "name": "employee_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "员工工号（精确匹配）",
+              "title": "Employee Id"
+            },
+            "description": "员工工号（精确匹配）",
+            "example": "EMP001"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeWorklogListResponse"
+                },
+                "example": {
+                  "total": 100,
+                  "page": 1,
+                  "page_size": 10,
+                  "items": [
+                    {
+                      "id": 1,
+                      "order_no": "ORD20250101001",
+                      "model": "MODEL-A",
+                      "brand_no": "BRAND-001",
+                      "employee_id": "EMP001",
+                      "employee_name": "张三",
+                      "job_type": "组装",
+                      "quantity": 50,
+                      "performance_factor": 1.2,
+                      "performance_amount": 1200.0,
+                      "work_date": "2025-01-01T00:00:00Z",
+                      "upload_date": "2025-01-01T00:00:00Z",
+                      "validation_result": "正常",
+                      "created_at": "2025-01-01T00:00:00Z",
+                      "updated_at": "2025-01-01T00:00:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/worklog/{order_no}": {
+      "get": {
+        "tags": [
+          "worklog"
+        ],
+        "summary": "按订单号查询员工工作量",
+        "description": "根据订单号精确查询所有相关的员工工作量记录。需要 Bearer Token 认证。",
+        "operationId": "get_employee_worklog_by_order_no_api_worklog__order_no__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Order No"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmployeeWorklogResponse"
+                  },
+                  "title": "Response Get Employee Worklog By Order No Api Worklog  Order No  Get"
+                },
+                "example": [
+                  {
+                    "id": 1,
+                    "order_no": "ORD20250101001",
+                    "model": "MODEL-A",
+                    "brand_no": "BRAND-001",
+                    "employee_id": "EMP001",
+                    "employee_name": "张三",
+                    "job_type": "组装",
+                    "quantity": 50,
+                    "performance_factor": 1.2,
+                    "performance_amount": 1200.0,
+                    "work_date": "2025-01-01T00:00:00Z",
+                    "upload_date": "2025-01-01T00:00:00Z",
+                    "validation_result": "正常",
+                    "created_at": "2025-01-01T00:00:00Z",
+                    "updated_at": "2025-01-01T00:00:00Z"
+                  }
+                ]
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "订单号不存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/validation/check": {
+      "post": {
+        "tags": [
+          "validation"
+        ],
+        "summary": "数据核验",
+        "description": "在指定时间范围内核验生产信息和员工工作量数据的一致性。需要 Bearer Token 认证。",
+        "operationId": "validate_data_api_validation_check_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "核验成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationResponse"
+                },
+                "example": {
+                  "total_production_records": 100,
+                  "total_worklog_records": 200,
+                  "exception_count": 5,
+                  "normal_count": 95,
+                  "exceptions": [
+                    {
+                      "order_no": "ORD20250101001",
+                      "exception_type": "数量不匹配",
+                      "worklogs": []
+                    }
+                  ],
+                  "normal": [
+                    {
+                      "order_no": "ORD20250101002",
+                      "worklogs": []
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误（如开始日期晚于结束日期）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "认证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "请求参数验证失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "description": "根路径",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "description": "健康检查",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthenticationErrorResponse": {
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "title": "Error",
+            "description": "是否为错误响应",
+            "default": true
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "错误消息"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "错误详情"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "AuthenticationErrorResponse",
+        "description": "认证错误响应模型",
+        "example": {
+          "detail": {},
+          "error": true,
+          "message": "认证失败"
+        }
+      },
+      "Body_upload_production_local_api_upload_production_local_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Excel 文件（.xlsx 或 .xls 格式）"
+          },
+          "filter_month": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Month",
+            "description": "月份过滤,格式:yyyyMM"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_production_local_api_upload_production_local_post"
+      },
+      "Body_upload_worklog_local_api_upload_worklog_local_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "Excel 文件（.xlsx 或 .xls 格式）"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_worklog_local_api_upload_worklog_local_post"
+      },
+      "EmployeeWorklogListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/EmployeeWorklogResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "page",
+          "page_size",
+          "items"
+        ],
+        "title": "EmployeeWorklogListResponse",
+        "description": "员工工作量列表响应模型"
+      },
+      "EmployeeWorklogResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "记录 ID"
+          },
+          "order_no": {
+            "type": "string",
+            "title": "Order No",
+            "description": "订单号"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model",
+            "description": "型号"
+          },
+          "brand_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand No",
+            "description": "品牌编号"
+          },
+          "employee_id": {
+            "type": "string",
+            "title": "Employee Id",
+            "description": "员工工号"
+          },
+          "employee_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Employee Name",
+            "description": "员工姓名"
+          },
+          "job_type": {
+            "type": "string",
+            "title": "Job Type",
+            "description": "作业类型"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "description": "数量"
+          },
+          "performance_factor": {
+            "type": "number",
+            "title": "Performance Factor",
+            "description": "绩效系数"
+          },
+          "performance_amount": {
+            "type": "number",
+            "title": "Performance Amount",
+            "description": "绩效金额"
+          },
+          "work_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Work Date",
+            "description": "工作日期"
+          },
+          "upload_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Upload Date",
+            "description": "上传日期"
+          },
+          "validation_result": {
+            "type": "string",
+            "title": "Validation Result",
+            "description": "核验结果"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "创建时间"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "更新时间"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_no",
+          "employee_id",
+          "job_type",
+          "quantity",
+          "performance_factor",
+          "performance_amount",
+          "work_date",
+          "upload_date",
+          "validation_result",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "EmployeeWorklogResponse",
+        "description": "员工工作量响应模型",
+        "example": {
+          "brand_no": "BRAND-001",
+          "created_at": "2025-01-01T00:00:00Z",
+          "employee_id": "EMP001",
+          "employee_name": "张三",
+          "id": 1,
+          "job_type": "组装",
+          "model": "MODEL-A",
+          "order_no": "ORD20250101001",
+          "performance_amount": 1200.0,
+          "performance_factor": 1.2,
+          "quantity": 50,
+          "updated_at": "2025-01-01T00:00:00Z",
+          "upload_date": "2025-01-01T00:00:00Z",
+          "validation_result": "正常",
+          "work_date": "2025-01-01T00:00:00Z"
+        }
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InternalServerErrorResponse": {
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "title": "Error",
+            "description": "是否为错误响应",
+            "default": true
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "错误消息"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "错误详情"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "InternalServerErrorResponse",
+        "description": "服务器内部错误响应模型",
+        "example": {
+          "detail": {
+            "message": "Connection timeout",
+            "type": "DatabaseError"
+          },
+          "error": true,
+          "message": "服务器内部错误"
+        }
+      },
+      "NotFoundErrorResponse": {
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "title": "Error",
+            "description": "是否为错误响应",
+            "default": true
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "错误消息"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "错误详情"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "NotFoundErrorResponse",
+        "description": "资源未找到错误响应模型",
+        "example": {
+          "detail": {
+            "id": "12345",
+            "resource": "order"
+          },
+          "error": true,
+          "message": "资源未找到"
+        }
+      },
+      "ProductionInfoListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductionInfoResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "page",
+          "page_size",
+          "items"
+        ],
+        "title": "ProductionInfoListResponse",
+        "description": "生产信息列表响应模型"
+      },
+      "ProductionInfoResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "记录 ID"
+          },
+          "order_no": {
+            "type": "string",
+            "title": "Order No",
+            "description": "订单号"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "型号"
+          },
+          "brand_no": {
+            "type": "string",
+            "title": "Brand No",
+            "description": "品牌编号"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity",
+            "description": "数量"
+          },
+          "job_type": {
+            "type": "string",
+            "title": "Job Type",
+            "description": "作业类型"
+          },
+          "worklog_no": {
+            "type": "string",
+            "title": "Worklog No",
+            "description": "工作量编号"
+          },
+          "performance_factor": {
+            "type": "number",
+            "title": "Performance Factor",
+            "description": "绩效系数"
+          },
+          "upload_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Upload Date",
+            "description": "上传日期"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "创建时间"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "更新时间"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "order_no",
+          "model",
+          "brand_no",
+          "quantity",
+          "job_type",
+          "worklog_no",
+          "performance_factor",
+          "upload_date",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ProductionInfoResponse",
+        "description": "生产信息响应模型",
+        "example": {
+          "brand_no": "BRAND-001",
+          "created_at": "2025-01-01T00:00:00Z",
+          "id": 1,
+          "job_type": "组装",
+          "model": "MODEL-A",
+          "order_no": "ORD20250101001",
+          "performance_factor": 1.2,
+          "quantity": 100,
+          "updated_at": "2025-01-01T00:00:00Z",
+          "upload_date": "2025-01-01T00:00:00Z",
+          "worklog_no": "WL001"
+        }
+      },
+      "ProductionOSSUploadRequest": {
+        "properties": {
+          "object_key": {
+            "type": "string",
+            "title": "Object Key",
+            "description": "OSS 对象键(文件路径)",
+            "example": "uploads/production/2025/01/production_info.xlsx"
+          },
+          "filter_month": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filter Month",
+            "description": "月份过滤,格式:yyyyMM",
+            "example": "202501"
+          }
+        },
+        "type": "object",
+        "required": [
+          "object_key"
+        ],
+        "title": "ProductionOSSUploadRequest",
+        "description": "生产信息 OSS 上传请求",
+        "example": {
+          "filter_month": "202501",
+          "object_key": "uploads/production/2025/01/production_info.xlsx"
+        }
+      },
+      "User": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "用户 ID"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "创建时间"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "更新时间"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "User",
+        "description": "用户响应模型（不包含敏感信息）",
+        "example": {
+          "created_at": "2025-01-01T00:00:00Z",
+          "id": 1,
+          "updated_at": "2025-01-01T00:00:00Z",
+          "username": "admin"
+        }
+      },
+      "UserLogin": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Username",
+            "description": "用户名"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6,
+            "title": "Password",
+            "description": "密码"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "UserLogin",
+        "description": "用户登录模型",
+        "example": {
+          "password": "password123",
+          "username": "admin"
+        }
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ValidationErrorResponse": {
+        "properties": {
+          "error": {
+            "type": "boolean",
+            "title": "Error",
+            "description": "是否为错误响应",
+            "default": true
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "错误消息"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail",
+            "description": "错误详情"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ValidationErrorResponse",
+        "description": "验证错误响应模型",
+        "example": {
+          "detail": {
+            "field": "order_no",
+            "reason": "订单号不能为空"
+          },
+          "error": true,
+          "message": "数据验证失败"
+        }
+      },
+      "ValidationExceptionItem": {
+        "properties": {
+          "order_no": {
+            "type": "string",
+            "title": "Order No"
+          },
+          "exception_type": {
+            "type": "string",
+            "title": "Exception Type"
+          },
+          "worklogs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Worklogs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_no",
+          "exception_type",
+          "worklogs"
+        ],
+        "title": "ValidationExceptionItem",
+        "description": "异常数据项"
+      },
+      "ValidationNormalItem": {
+        "properties": {
+          "order_no": {
+            "type": "string",
+            "title": "Order No"
+          },
+          "worklogs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Worklogs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_no",
+          "worklogs"
+        ],
+        "title": "ValidationNormalItem",
+        "description": "正常数据项"
+      },
+      "ValidationRequest": {
+        "properties": {
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Start Date",
+            "description": "开始日期，格式：YYYY-MM-DDTHH:MM:SS",
+            "example": "2025-01-01T00:00:00"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "End Date",
+            "description": "结束日期，格式：YYYY-MM-DDTHH:MM:SS",
+            "example": "2025-01-31T23:59:59"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start_date",
+          "end_date"
+        ],
+        "title": "ValidationRequest",
+        "description": "数据核验请求模型",
+        "example": {
+          "end_date": "2025-01-31T23:59:59",
+          "start_date": "2025-01-01T00:00:00"
+        }
+      },
+      "ValidationResponse": {
+        "properties": {
+          "total_production_records": {
+            "type": "integer",
+            "title": "Total Production Records",
+            "description": "生产信息总记录数"
+          },
+          "total_worklog_records": {
+            "type": "integer",
+            "title": "Total Worklog Records",
+            "description": "员工工作量总记录数"
+          },
+          "exception_count": {
+            "type": "integer",
+            "title": "Exception Count",
+            "description": "异常数据项数量"
+          },
+          "normal_count": {
+            "type": "integer",
+            "title": "Normal Count",
+            "description": "正常数据项数量"
+          },
+          "exceptions": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationExceptionItem"
+            },
+            "type": "array",
+            "title": "Exceptions",
+            "description": "异常数据列表"
+          },
+          "normal": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationNormalItem"
+            },
+            "type": "array",
+            "title": "Normal",
+            "description": "正常数据列表"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_production_records",
+          "total_worklog_records",
+          "exception_count",
+          "normal_count",
+          "exceptions",
+          "normal"
+        ],
+        "title": "ValidationResponse",
+        "description": "数据核验响应模型",
+        "example": {
+          "exception_count": 5,
+          "exceptions": [
+            {
+              "exception_type": "数量不匹配",
+              "order_no": "ORD20250101001",
+              "worklogs": [
+                {
+                  "employee_id": "EMP001",
+                  "id": 1,
+                  "order_no": "ORD20250101001",
+                  "quantity": 50
+                }
+              ]
+            }
+          ],
+          "normal": [
+            {
+              "order_no": "ORD20250101002",
+              "worklogs": [
+                {
+                  "employee_id": "EMP002",
+                  "id": 2,
+                  "order_no": "ORD20250101002",
+                  "quantity": 100
+                }
+              ]
+            }
+          ],
+          "normal_count": 95,
+          "total_production_records": 100,
+          "total_worklog_records": 200
+        }
+      },
+      "WorklogOSSUploadRequest": {
+        "properties": {
+          "object_key": {
+            "type": "string",
+            "title": "Object Key",
+            "description": "OSS 对象键(文件路径)",
+            "example": "uploads/worklog/2025/01/worklog_202501.xlsx"
+          }
+        },
+        "type": "object",
+        "required": [
+          "object_key"
+        ],
+        "title": "WorklogOSSUploadRequest",
+        "description": "员工工作量 OSS 上传请求",
+        "example": {
+          "object_key": "uploads/worklog/2025/01/worklog_202501.xlsx"
+        }
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "输入 JWT token，格式：Bearer <token>"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "用户认证相关接口，包括登录和获取当前用户信息。"
+    },
+    {
+      "name": "upload",
+      "description": "文件上传接口，支持本地存储和阿里云 OSS 两种方式上传生产信息和员工工作量数据。"
+    },
+    {
+      "name": "production",
+      "description": "生产信息查询接口，支持分页、订单号、日期范围等条件查询。"
+    },
+    {
+      "name": "worklog",
+      "description": "员工工作量查询接口，支持分页、订单号、日期范围、员工工号等条件查询。"
+    },
+    {
+      "name": "validation",
+      "description": "数据核验接口，用于验证生产信息和员工工作量数据的一致性。"
+    }
+  ]
+}

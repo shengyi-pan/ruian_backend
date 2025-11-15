@@ -1,0 +1,36 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "导入单个用户",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/import_users.py",
+            "console": "integratedTerminal",
+            "args": ["--username", "admin", "--password", "123456"],
+            "justMyCode": true
+        },
+        {
+            "name": "从 CSV 文件批量导入用户",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/import_users.py",
+            "console": "integratedTerminal",
+            "args": ["--file", "${workspaceFolder}/data/users_example.csv"],
+            "justMyCode": true
+        },
+        {
+            "name": "从 CSV 导入（不跳过已存在用户）",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/import_users.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--file",
+                "${workspaceFolder}/data/users_example.csv",
+                "--no-skip-existing"
+            ],
+            "justMyCode": true
+        }
+    ]
+}

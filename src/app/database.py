@@ -14,7 +14,7 @@ Copyright (c) 2025 by sy.pan, All Rights Reserved.
 使用 SQLAlchemy 管理数据库连接和会话
 """
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.config import get_config

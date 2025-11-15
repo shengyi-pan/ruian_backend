@@ -22,10 +22,13 @@ class DatabaseConfig(BaseModel):
     pool_size: int = 5
     max_overflow: int = 10
     pool_timeout: int = 30
+    timezone: str = "Asia/Shanghai"  # 数据库时区，默认为中国标准时间（UTC+8）
+    set_timezone_on_connect: bool = True  # 是否在应用层设置时区（如果数据库服务端已设置，可设为 False）
 
     @property
     def database_url(self) -> str:
         """生成数据库连接 URL"""
+        # 时区通过 database.py 中的 event listener 设置，不需要在 URL 中指定
         return f"postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.dbname}"
 
 

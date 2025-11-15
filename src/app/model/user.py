@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, DateTime, Integer, String
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -22,9 +22,14 @@ class UserDB(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
 
@@ -55,16 +60,34 @@ class UserInDB(UserBase):
 class User(UserBase):
     """用户响应模型（不包含敏感信息）"""
 
-    id: int
-    created_at: datetime
-    updated_at: datetime
+    id: int = Field(..., description="用户 ID")
+    created_at: datetime = Field(..., description="创建时间")
+    updated_at: datetime = Field(..., description="更新时间")
 
-    model_config = {"from_attributes": True}
+    model_config = {
+        "from_attributes": True,
+        "json_schema_extra": {
+            "example": {
+                "id": 1,
+                "username": "admin",
+                "created_at": "2025-01-01T00:00:00Z",
+                "updated_at": "2025-01-01T00:00:00Z",
+            }
+        },
+    }
 
 
 class UserLogin(BaseModel):
     """用户登录模型"""
 
-    username: str
-    password: str
+    username: str = Field(..., description="用户名", min_length=1, max_length=50)
+    password: str = Field(..., description="密码", min_length=6)
 
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "username": "admin",
+                "password": "password123",
+            }
+        }
+    }

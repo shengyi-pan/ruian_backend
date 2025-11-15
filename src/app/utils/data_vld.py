@@ -121,11 +121,14 @@ if __name__ == "__main__":
         production_info_list, employee_worklog_list
     )
     print(f"共校验出 {len(exception_result)} 条异常")
-    for tuple_key, worklog_list in list(exception_result.items())[:5]:
+    for tuple_key, worklog_list in list(exception_result.items()):
         order_no, except_enum = tuple_key
         print(f"订单号: {order_no}, 异常类型: {except_enum}")
         for worklog in worklog_list:
-            print(worklog.model_dump())
+            worklog_dict = worklog.model_dump()
+            print(
+                f"生产订单号: {worklog_dict['order_no']}, 工号: {worklog_dict['employee_id']}, 工作量: {worklog_dict['performance_amount']}, 校验结果: {worklog_dict['validation_result']}"
+            )
             print("-" * 100)
 
     print(f"\n共校验出 {len(normal_result)} 个正常订单")

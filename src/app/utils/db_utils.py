@@ -40,7 +40,7 @@ def upsert_production_info(
                     ProductionInfoDB.model == prod_info.model,
                     ProductionInfoDB.brand_no == prod_info.brand_no,
                     ProductionInfoDB.job_type == prod_info.job_type,
-                    ProductionInfoDB.upload_date == prod_info.upload_date,
+                    ProductionInfoDB.worklog_no == prod_info.worklog_no,
                 )
             )
             .first()
@@ -52,6 +52,7 @@ def upsert_production_info(
             existing.worklog_no = prod_info.worklog_no
             existing.performance_factor = Decimal(str(prod_info.performance_factor))
             existing.updated_at = datetime.now(timezone.utc)
+            existing.upload_date = prod_info.upload_date
         else:
             # 创建新记录
             new_record = ProductionInfoDB(

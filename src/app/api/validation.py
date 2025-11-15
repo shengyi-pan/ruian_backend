@@ -80,8 +80,8 @@ async def validate_data(
     production_info_list = (
         db.query(ProductionInfoDB)
         .filter(
-            ProductionInfoDB.upload_date >= request.start_date,
-            ProductionInfoDB.upload_date <= request.end_date,
+            ProductionInfoDB.created_at >= request.start_date,
+            ProductionInfoDB.created_at <= request.end_date,
         )
         .all()
     )

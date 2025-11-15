@@ -49,6 +49,7 @@ def upsert_production_info(
         if existing:
             # 更新现有记录
             existing.quantity = prod_info.quantity
+            existing.worklog_no = prod_info.worklog_no
             existing.performance_factor = Decimal(str(prod_info.performance_factor))
             existing.updated_at = datetime.now(timezone.utc)
         else:
@@ -59,6 +60,7 @@ def upsert_production_info(
                 brand_no=prod_info.brand_no,
                 quantity=prod_info.quantity,
                 job_type=prod_info.job_type,
+                worklog_no=prod_info.worklog_no,
                 performance_factor=Decimal(str(prod_info.performance_factor)),
                 upload_date=prod_info.upload_date,
                 created_at=prod_info.created_at,

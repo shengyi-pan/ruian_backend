@@ -15,7 +15,8 @@ from app.exceptions import ValidationError
 from app.model.employee_worklog import EmployeeWorklog, EmployeeWorklogDB
 from app.model.production_info import ProductionInfo, ProductionInfoDB
 from app.model.user import User
-from app.utils.data_vld import VldResultEnum, validate_production_and_worklog
+from app.utils.data_vld import validate_production_and_worklog
+from app.utils.enums import VldResultEnum
 
 router = APIRouter(prefix="/api/validation", tags=["validation"])
 
@@ -106,6 +107,7 @@ async def validate_data(
                 brand_no=item.brand_no,
                 quantity=item.quantity,
                 job_type=item.job_type,
+                worklog_no=item.worklog_no,
                 performance_factor=float(item.performance_factor),
                 upload_date=item.upload_date,
                 created_at=item.created_at,

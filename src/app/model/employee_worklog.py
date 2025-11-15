@@ -17,7 +17,7 @@ from sqlalchemy import Column, DateTime, Index, Integer, Numeric, String
 from sqlalchemy.sql import func
 
 from app.database import Base
-from app.utils.data_vld import VldResultEnum
+from app.utils.enums import VldResultEnum
 
 
 # ------------------------------

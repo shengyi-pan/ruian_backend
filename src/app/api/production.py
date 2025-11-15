@@ -28,6 +28,7 @@ class ProductionInfoResponse(BaseModel):
     brand_no: str
     quantity: int
     job_type: str
+    worklog_no: str
     performance_factor: float
     upload_date: datetime
     created_at: datetime

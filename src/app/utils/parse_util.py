@@ -16,6 +16,7 @@ PRODUCTION_INFO_COLUMN_MAP = {
     "单据日期": "doc_date",  # 中间字段，用于 created_at / updated_at
     "转出作业": "job_type",
     "合格数量": "quantity",
+    "转出工序计划号": "worklog_no",  # 和工作量表的订单号关联
 }
 
 PRODUCTION_INFO_REQUIRED_COLUMNS = [
@@ -25,6 +26,7 @@ PRODUCTION_INFO_REQUIRED_COLUMNS = [
     "单据日期",
     "转出作业",
     "合格数量",
+    "转出工序计划号",
 ]
 
 
@@ -123,6 +125,7 @@ def parse_production_excel(
             "brand_no": row.get("brand_no", ""),
             "quantity": row.get("quantity", None),
             "job_type": row.get("job_type", ""),
+            "worklog_no": row.get("worklog_no", ""),
             # 未映射字段使用默认：performance_factor=1.00, upload_date=today, id=None
             "performance_factor": Decimal("1.00"),
             "upload_date": date.today(),
@@ -328,19 +331,19 @@ def parse_employee_worklogs_from_excel(file_path: str) -> List[EmployeeWorklog]:
 
 
 if __name__ == "__main__":
-    # # 你的文件路径（示例中为你上传的文件名；若脚本与文件同目录可直接使用）
-    # excel_file = "/Users/sy.pan/Documents/workspace/ml_lesson/ruian_backend/data/product_info_demo.xlsx"
+    # 你的文件路径（示例中为你上传的文件名；若脚本与文件同目录可直接使用）
+    excel_file = "/Users/sy.pan/Documents/workspace/ml_lesson/ruian_backend/data/product_info_demo.xlsx"
 
-    # items = parse_production_excel(excel_file, filter_month="202511")
-    # print(f"共解析到 {len(items)} 条记录")
-    # # 打印前3条示例
-    # for i, it in enumerate(items[:3], 1):
-    #     print(f"[{i}] -> {it.model_dump()}")
+    items = parse_production_excel(excel_file, filter_month="202511")
+    print(f"共解析到 {len(items)} 条记录")
+    # 打印前3条示例
+    for i, it in enumerate(items[:3], 1):
+        print(f"[{i}] -> {it.model_dump()}")
 
-    # 示例：解析当前目录下的 10月毛刷台账.xlsx
-    file_path = "/Users/sy.pan/Documents/workspace/ml_lesson/ruian_backend/data/worklog_demo.xlsx"
-    logs = parse_employee_worklogs_from_excel(file_path)
-    print(f"总共解析出 {len(logs)} 条记录")
-    # 打印前几条示意
-    for item in logs[:5]:
-        print(item.model_dump())
+    # # 示例：解析当前目录下的 10月毛刷台账.xlsx
+    # file_path = "/Users/sy.pan/Documents/workspace/ml_lesson/ruian_backend/data/worklog_demo.xlsx"
+    # logs = parse_employee_worklogs_from_excel(file_path)
+    # print(f"总共解析出 {len(logs)} 条记录")
+    # # 打印前几条示意
+    # for item in logs[:5]:
+    #     print(item.model_dump())

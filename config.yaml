@@ -20,7 +20,7 @@ database:
 jwt:
     secret_key: "your-jwt-secret-key-change-in-production"
     algorithm: "HS256"
-    access_token_expire_minutes: 30
+    access_token_expire_minutes: 4320
 
 # API Key 配置（用于 Head Auth）
 api:

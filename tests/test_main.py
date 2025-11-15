@@ -1,28 +1,18 @@
-'''
-Author: sy.pan
-Date: 2025-08-20 11:06:08
-LastEditors: sy.pan
-LastEditTime: 2025-08-23 14:17:19
-FilePath: /ruian_backend/tests/test_main.py
-Description: 
-
-Copyright (c) 2025 by sy.pan, All Rights Reserved. 
-'''
 """
 Author: sy.pan
 Date: 2025-08-20 11:06:08
 LastEditors: sy.pan
-LastEditTime: 2025-08-23 13:29:45
+LastEditTime: 2025-11-14 15:18:42
 FilePath: /ruian_backend/tests/test_main.py
 Description:
 
 Copyright (c) 2025 by sy.pan, All Rights Reserved.
 """
 
-"""Tests for the main module."""
-
 import pytest
+
 from app.main import main, process_data
+
 
 def test_process_data():
     """
@@ -31,7 +21,7 @@ def test_process_data():
     test_data = "test input"
     result = process_data(test_data)
     assert result == test_data
-    print('test process success.')
+    print("test process success.")
 
 
 def test_main_function():
@@ -52,7 +42,7 @@ class TestAgentData:
         sample_data = {"key": "value", "number": 42}
         processed = process_data(sample_data)
         assert processed == sample_data
-        print('>>> Success, test_data_processing')
+        print(">>> Success, test_data_processing")
 
     def test_empty_data(self):
         """Test processing of empty data."""
@@ -60,4 +50,4 @@ class TestAgentData:
         result = process_data(empty_data)
 
         assert result is None
-        print('>>>Success, test_empty_data')
+        print(">>>Success, test_empty_data")

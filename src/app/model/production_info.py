@@ -27,6 +27,7 @@ class ProductionInfoDB(Base):
     brand_no = Column(String, nullable=False)
     quantity = Column(Integer, nullable=False)
     job_type = Column(String, nullable=False, index=True)
+    worklog_no = Column(String, nullable=False, index=True)  # 转出工序计划号，用于关联工作量表
     performance_factor = Column(Numeric(6, 2), nullable=False)
     upload_date = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
@@ -61,6 +62,7 @@ class ProductionInfo(BaseModel):
     brand_no: str  # 牌号/单据编号（Excel: 单据编号）
     quantity: int  # 合格数量（Excel: 合格数量），需 > 0
     job_type: str  # 工种/转出作业（Excel: 转出作业）
+    worklog_no: str  # 转出工序计划号（Excel: 转出工序计划号），用于关联工作量表
 
     performance_factor: Decimal = Field(
         default=Decimal("1.00"),  # 合法正数默认值
@@ -82,7 +84,7 @@ class ProductionInfo(BaseModel):
     )
 
     # --------- 校验与清洗 ---------
-    @field_validator("order_no", "model", "brand_no", "job_type", mode="before")
+    @field_validator("order_no", "model", "brand_no", "job_type", "worklog_no", mode="before")
     @classmethod
     def _strip_str(cls, v):
         if v is None:

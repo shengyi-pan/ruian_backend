@@ -1,4 +1,15 @@
 """
+Author: sy.pan
+Date: 2025-11-14 15:13:05
+LastEditors: sy.pan
+LastEditTime: 2025-11-14 15:16:32
+FilePath: /ruian_backend/src/app/auth/dependencies.py
+Description:
+
+Copyright (c) 2025 by sy.pan, All Rights Reserved.
+"""
+
+"""
 FastAPI 依赖注入
 用于认证和授权
 """
@@ -25,7 +36,7 @@ async def get_current_user(
     从 Authorization header 中获取当前用户
 
     Args:
-        authorization: Authorization header 值（格式：Bearer <token>）
+        authorization: Authorization header 值(格式:Bearer <token>)
         db: 数据库会话
 
     Returns:
@@ -65,7 +76,7 @@ async def get_current_user(
 
 def verify_api_key(x_api_key: Optional[str] = Header(None)) -> bool:
     """
-    验证 API Key（用于某些需要 API Key 的接口）
+    验证 API Key(用于某些需要 API Key 的接口)
 
     Args:
         x_api_key: API Key header 值
@@ -83,4 +94,3 @@ def verify_api_key(x_api_key: Optional[str] = Header(None)) -> bool:
         raise AuthorizationError("无效的 API Key")
 
     return True
-

@@ -8,24 +8,15 @@ Copyright (c) 2025 by sy.pan, All Rights Reserved.
 """
 
 from collections import defaultdict
-from enum import Enum
 from typing import Dict, List, Tuple
 
 from app.model.employee_worklog import EmployeeWorklog
 from app.model.production_info import ProductionInfo
+from app.utils.enums import VldResultEnum
 from app.utils.parse_util import (
     parse_employee_worklogs_from_excel,
     parse_production_excel,
 )
-
-
-class VldResultEnum(str, Enum):
-    """异常枚举类型"""
-
-    NOT_VLDED = "未校验"
-    VLD_PASSED = "校验通过"
-    PERFORMANCE_EXCEEDS_QUANTITY = "工作量超出系统值"
-    ORDER_NO_NOT_FOUND = "工作量生产单号不存在"
 
 
 def validate_production_and_worklog(
@@ -53,10 +44,11 @@ def validate_production_and_worklog(
     )
     normal_result: Dict[str, List[EmployeeWorklog]] = defaultdict(list)
 
-    # 1. 基于 order_no 聚合求和 ProductionInfo.quantity
+    # 1. 基于 worklog_no 聚合求和 ProductionInfo.quantity
+    # EmployeeWorklog.order_no 对应到 ProductionInfo.worklog_no 进行统计计算
     production_agg: Dict[str, int] = defaultdict(int)
     for prod in production_info_list:
-        production_agg[prod.order_no] += prod.quantity
+        production_agg[prod.worklog_no] += prod.quantity
 
     # 2. 基于 order_no 聚合求和 EmployeeWorklog.performance_amount
     worklog_agg: Dict[str, float] = defaultdict(float)
@@ -66,7 +58,7 @@ def validate_production_and_worklog(
         worklog_by_order[worklog.order_no].append(worklog)
 
     # 3. 检查异常：工作量生产单号不存在
-    # 如果 order_no 在 EmployeeWorklog 存在，但在 ProductionInfo 不存在
+    # 如果 order_no 在 EmployeeWorklog 存在，但在 ProductionInfo.worklog_no 中不存在
     exception_order_nos = set()
     for order_no in worklog_agg.keys():
         if order_no not in production_agg:
@@ -81,7 +73,7 @@ def validate_production_and_worklog(
             )
 
     # 4. 检查异常：工作量超出系统值
-    # 对每个 order_no 对比求和值（仅检查在 ProductionInfo 中存在的 order_no）
+    # 对每个 order_no 对比求和值（仅检查在 ProductionInfo.worklog_no 中存在的 order_no）
     for order_no, worklog_sum in worklog_agg.items():
         if order_no in production_agg:  # 只检查存在的订单号
             production_sum = production_agg[order_no]

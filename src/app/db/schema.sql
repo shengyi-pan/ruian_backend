@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS production_info (
     brand_no TEXT NOT NULL, -- 牌号（如 GXZYD00652946）
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     job_type TEXT NOT NULL, -- 工种（如 钝化 / 烧结）
+    worklog_no TEXT NOT NULL, -- 转出工序计划号，用于关联工作量表
     performance_factor NUMERIC(6,2) NOT NULL CHECK (performance_factor > 0),
     upload_date TIMESTAMPTZ NOT NULL DEFAULT now(), -- 上传日期（展示列）
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -33,6 +34,7 @@ CREATE TABLE IF NOT EXISTS production_info (
 -- 常用查询索引
 CREATE INDEX IF NOT EXISTS idx_prodinfo_order_date ON production_info (order_no, upload_date DESC);
 CREATE INDEX IF NOT EXISTS idx_prodinfo_job_type ON production_info (job_type);
+CREATE INDEX IF NOT EXISTS idx_prodinfo_worklog_no ON production_info (worklog_no);
 
 -- 3. 员工工作量表
 -- 员工按天的计件/工作量明细（来自"上传计件信息 excel"）

@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+.venv/
+venv/
+ENV/
+env/
+
+# 构建产物
+build/
+dist/
+wheels/
+*.whl
+
+# 测试
+tests/
+.pytest_cache/
+pytest.ini
+.coverage
+htmlcov/
+
+# 版本控制
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 文档和示例数据
+docs/
+data/
+README.md
+
+# 开发脚本
+run.sh
+
+# 日志和临时文件
+*.log
+*.tmp
+*.bak
+
+# Docker 相关
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 上传目录（通过卷挂载，不打包进镜像）
+uploads/
+

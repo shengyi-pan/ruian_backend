@@ -1517,7 +1517,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: 输入 JWT token，格式：Bearer <token>
+      description: 输入 JWT token（仅输入 token 本身，无需添加 'Bearer' 前缀，系统会自动添加）
 tags:
 - name: auth
   description: 用户认证相关接口，包括登录和获取当前用户信息。

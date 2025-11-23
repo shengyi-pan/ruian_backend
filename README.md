@@ -2,7 +2,7 @@
  * @Author: sy.pan
  * @Date: 2025-09-10 10:27:41
  * @LastEditors: sy.pan
- * @LastEditTime: 2025-11-15 16:41:36
+ * @LastEditTime: 2025-11-23 10:21:33
  * @FilePath: /ruian_backend/README.md
  * @Description:
  *
@@ -31,21 +31,14 @@ Good Luck!
 
 由于开发阶段后端服务可能不会一直在线，可以使用以下方式导出 API 文档供离线使用：
 
-#### 方式一：使用命令行脚本
+#### 使用命令行脚本
 
 ```bash
 # 导出到默认目录 (docs/api/)
-python -m scripts.export_docs
+uv run python -m scripts.export_docs
 
 # 或指定输出目录
-python -m scripts.export_docs -o /path/to/output
-```
-
-#### 方式二：使用安装的命令
-
-```bash
-# 如果已安装项目
-export-docs
+uv run python -m scripts.export_docs -o /path/to/output
 ```
 
 导出的文件：

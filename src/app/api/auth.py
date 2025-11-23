@@ -3,7 +3,6 @@
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
@@ -20,7 +19,6 @@ from app.schemas.error import (
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-security = HTTPBearer()
 
 
 @router.post(
@@ -121,7 +119,6 @@ async def login(
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     """

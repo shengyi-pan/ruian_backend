@@ -6,7 +6,6 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
-from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -23,7 +22,6 @@ from app.services.oss_service import get_oss_service
 from app.services.upload_service import get_upload_service
 
 router = APIRouter(prefix="/api/upload", tags=["upload"])
-security = HTTPBearer()
 
 
 # ==================== 请求模型 ====================
@@ -99,7 +97,6 @@ class WorklogOSSUploadRequest(BaseModel):
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def upload_production_local(
     file: UploadFile = File(..., description="Excel 文件（.xlsx 或 .xls 格式）"),
@@ -184,7 +181,6 @@ async def upload_production_local(
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def upload_production_oss(
     request: ProductionOSSUploadRequest,
@@ -256,7 +252,6 @@ async def upload_production_oss(
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def upload_worklog_local(
     file: UploadFile = File(..., description="Excel 文件（.xlsx 或 .xls 格式）"),
@@ -334,7 +329,6 @@ async def upload_worklog_local(
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def upload_worklog_oss(
     request: WorklogOSSUploadRequest,
@@ -402,7 +396,6 @@ async def upload_worklog_oss(
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def get_presigned_url(
     object_key: str = Query(

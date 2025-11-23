@@ -116,6 +116,32 @@ def custom_openapi():
         }
     }
 
+    # 为需要认证的路径添加 security 字段
+    # 检查所有路径，如果路径描述中包含"需要 Bearer Token 认证"或"需要认证"，
+    # 或者路径不在 /api/auth/login 和 / 等公开路径中，则添加 security 字段
+    public_paths = {"/", "/health", "/openapi.json", "/openapi.yaml", "/docs", "/redoc"}
+    auth_paths = {"/api/auth/login"}  # 登录接口不需要认证
+
+    for path, methods in openapi_schema.get("paths", {}).items():
+        # 跳过公开路径
+        if path in public_paths or path in auth_paths:
+            continue
+
+        # 为路径下的所有 HTTP 方法添加 security 字段
+        for method, operation in methods.items():
+            if isinstance(operation, dict):
+                # 检查描述中是否提到需要认证，或者直接为所有非公开路径添加
+                description = operation.get("description", "")
+                summary = operation.get("summary", "")
+                # 如果描述或摘要中提到需要认证，或者路径是 /api/ 下的非登录接口
+                if (
+                    "需要 Bearer Token 认证" in description
+                    or "需要认证" in description
+                    or "需要 Bearer Token" in description
+                    or (path.startswith("/api/") and path != "/api/auth/login")
+                ):
+                    operation["security"] = [{"Bearer": []}]
+
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 

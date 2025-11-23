@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query
-from fastapi.security import HTTPBearer
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session
@@ -23,7 +22,6 @@ from app.schemas.error import (
 )
 
 router = APIRouter(prefix="/api/production", tags=["production"])
-security = HTTPBearer()
 
 
 class ProductionInfoResponse(BaseModel):
@@ -117,7 +115,6 @@ class ProductionInfoListResponse(BaseModel):
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def get_production_info(
     page: int = Query(1, ge=1, description="页码，从 1 开始", example=1),
@@ -239,7 +236,6 @@ async def get_production_info(
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def get_production_info_by_order_no(
     order_no: str,

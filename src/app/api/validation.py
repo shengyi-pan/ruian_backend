@@ -5,8 +5,7 @@
 from datetime import datetime
 from typing import Dict, List
 
-from fastapi import APIRouter, Depends
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -25,7 +24,6 @@ from app.utils.data_vld import validate_production_and_worklog
 from app.utils.enums import VldResultEnum
 
 router = APIRouter(prefix="/api/validation", tags=["validation"])
-security = HTTPBearer()
 
 
 class ValidationRequest(BaseModel):
@@ -166,7 +164,6 @@ class ValidationResponse(BaseModel):
             "model": InternalServerErrorResponse,
         },
     },
-    dependencies=[Depends(security)],
 )
 async def validate_data(
     request: ValidationRequest,
@@ -202,7 +199,10 @@ async def validate_data(
     """
     # 验证时间范围
     if request.start_date > request.end_date:
-        raise ValidationError("开始日期不能晚于结束日期")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="开始日期不能晚于结束日期"
+        )
 
     # 从数据库查询时间范围内的 production_info
     production_info_list = (

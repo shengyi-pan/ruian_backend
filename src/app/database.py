@@ -27,6 +27,8 @@ engine = create_engine(
     pool_size=config.database.pool_size,
     max_overflow=config.database.max_overflow,
     pool_timeout=config.database.pool_timeout,
+    pool_recycle=config.database.pool_recycle,  # 连接回收时间，避免使用过期的连接
+    pool_pre_ping=config.database.pool_pre_ping,  # 使用连接前验证连接是否有效
     echo=config.app.debug,  # 在调试模式下打印 SQL
 )
 

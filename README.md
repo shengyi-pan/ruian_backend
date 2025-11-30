@@ -16,6 +16,57 @@ Python UV project demo.
 Must review pyproject.toml and pytest.ini content before deploying.
 Good Luck!
 
+## 启动服务
+
+### 方式一：使用启动脚本（推荐）
+
+```bash
+# 给脚本添加执行权限（首次使用）
+chmod +x run.sh
+
+# 启动服务
+./run.sh
+```
+
+### 方式二：使用 uv 直接启动
+
+```bash
+uv run app
+```
+
+### 方式三：使用 Docker Compose
+
+```bash
+# 构建并启动服务
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+更多 Docker 相关说明请参考 [DOCKER.md](./DOCKER.md)。
+
+### 方式四：使用 uvicorn 直接启动
+
+```bash
+# 使用 uv 运行
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+# 或使用 Python 直接运行
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 验证服务
+
+服务启动后，可以通过以下方式验证：
+
+- **健康检查**: http://localhost:8000/health
+- **API 根路径**: http://localhost:8000/
+- **API 文档**: http://localhost:8000/docs
+
 ## API 文档
 
 ### 在线文档

@@ -15,6 +15,8 @@ database:
     pool_size: 5
     max_overflow: 10
     pool_timeout: 30
+    pool_recycle: 3600  # 连接回收时间（秒），避免使用过期的连接。Supabase 通常 1 小时超时
+    pool_pre_ping: true  # 使用连接前验证连接是否有效，如果无效会自动重新连接
 
 # JWT 配置
 jwt:

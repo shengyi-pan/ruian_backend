@@ -22,6 +22,8 @@ class DatabaseConfig(BaseModel):
     pool_size: int = 5
     max_overflow: int = 10
     pool_timeout: int = 30
+    pool_recycle: int = 3600  # 连接回收时间（秒），避免使用过期的连接。Supabase 通常 1 小时超时
+    pool_pre_ping: bool = True  # 使用连接前验证连接是否有效，如果无效会自动重新连接
     timezone: str = "Asia/Shanghai"  # 数据库时区，默认为中国标准时间（UTC+8）
     set_timezone_on_connect: bool = True  # 是否在应用层设置时区（如果数据库服务端已设置，可设为 False）
 

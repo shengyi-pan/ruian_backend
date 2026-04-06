@@ -1,0 +1,43 @@
+name: Build Windows EXE
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install openpyxl pandas pydantic sqlalchemy pyinstaller
+
+      - name: Build EXE
+        run: |
+          pyinstaller --onefile --windowed --name "数据校验工具" ^
+            --paths src ^
+            --hidden-import openpyxl ^
+            --hidden-import pandas ^
+            --hidden-import pydantic ^
+            --hidden-import sqlalchemy.orm ^
+            tools/data_vld_gui.py
+        shell: cmd
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-validator-exe
+          path: dist/数据校验工具.exe
+          retention-days: 90

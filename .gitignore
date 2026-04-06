@@ -11,3 +11,4 @@ wheels/
 
 # uploads files
 uploads/
+.DS_Store

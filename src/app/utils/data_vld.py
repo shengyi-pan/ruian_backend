@@ -54,7 +54,8 @@ def validate_production_and_worklog(
     worklog_agg: Dict[str, float] = defaultdict(float)
     worklog_by_order: Dict[str, List[EmployeeWorklog]] = defaultdict(list)
     for worklog in employee_worklog_list:
-        worklog_agg[worklog.order_no] += worklog.performance_amount
+        # worklog_agg[worklog.order_no] += worklog.performance_amount
+        worklog_agg[worklog.order_no] += worklog.quantity
         worklog_by_order[worklog.order_no].append(worklog)
 
     # 3. 检查异常：工作量生产单号不存在
@@ -104,11 +105,16 @@ def validate_production_and_worklog(
 
 if __name__ == "__main__":
 
-    production_info_path = "/Users/sy.pan/Documents/workspace/ml_lesson/ruian_backend/data/product_info_full.xlsx"
-    employee_worklog_path = "/Users/sy.pan/Documents/workspace/ml_lesson/ruian_backend/data/worklog_202510.xlsx"
+    filter_month = "202603"
+    production_info_path = (
+        "/Users/sy.pan/Documents/workspace/ruian_backend/data/202603_full.xlsx"
+    )
+    employee_worklog_path = (
+        "/Users/sy.pan/Documents/workspace/ruian_backend/data/202603_worklog.xlsx"
+    )
 
     production_info_list = parse_production_excel(
-        production_info_path, filter_month="202510"
+        production_info_path, filter_month=filter_month
     )
     print(f"共解析到 {len(production_info_list)} 条生产信息")
 
